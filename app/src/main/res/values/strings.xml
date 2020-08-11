@@ -3,4 +3,5 @@
     <string name="hello_world">Willkommen beim Mückenfang</string>
     <string name="start_button">Start</string>
     <string name="todo">TODO</string>
+    <string name="game_over">Game Over</string>
 </resources>
