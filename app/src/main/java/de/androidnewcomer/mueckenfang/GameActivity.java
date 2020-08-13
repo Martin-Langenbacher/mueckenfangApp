@@ -9,6 +9,8 @@ import android.os.Handler;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -170,8 +172,17 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         punkte += 100;
         bildschirmAktualisieren();
         mediaPlayer.pause();
-        spielbereich.removeView(muecke);
+        Animation animationTreffer = AnimationUtils.loadAnimation(this,R.anim.treffer);
+        muecke.startAnimation(animationTreffer);
+            // Zeile löschen, da sonst die Mücke sofort gelöscht wird und die Animation nicht gezeigt wird
+            // spielbereich.removeView(muecke);
+
+            // wir benötigen einen AnimationListener um zu erfahren, wann die Animation beendet ist - dann können wir die Fliege löschen
+        animationTreffer.setAnimationListener(new MueckeAnimationListener(muecke));
+            // wir entfernen einfach am Ende von onClick() den Listener von der Mücke, indem wir ihn mit null überschreiben
+        muecke.setOnClickListener(null);
     }
+
 
     @Override
     public void run() {
@@ -183,6 +194,62 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         mediaPlayer.release();
         super.onDestroy();
+    }
+
+
+    // Warteschlange des Handlers wird geleert - hier falls es eine Pause gibt.
+    @Override
+    protected void onPause() {
+        super.onPause();
+        handler.removeCallbacks(this);
+    }
+    // --> Da in der GameActivity keine eigene Runnable-Klasse gebaut wurde, sondern die Activity selbst dazu verwendet wurde, lautet der richtige Parameter beim Aufruf der Methode removeCallbacks() einfach this.
+
+
+
+    /*
+    1) Die Methode onAnimationEnd() erfährt leider nicht, bei welcher Mücke die Animation beendet ist.
+    2) Auch die Animaton selbst lüftet dieses Geheimnis nicht...
+
+    3) Wir müssen also wohl oder über der Klasse MueckeAnimationListener eine Referenz auf die Mücke mitgeben. Eine Instanz der inneren Klasse merkt sich dann die Referenz und kann die richtige Mücke entfernen.
+
+    4) Lösung: Wir fügen der inneren Klasse ein Attribut muecke hinzu, und wir schreiben der Einfachheit einen Konstruktor, der dieses Attribut als Parameter mitbekommt:
+
+     */
+    private class MueckeAnimationListener implements Animation.AnimationListener {
+        private View muecke;
+
+        public MueckeAnimationListener(View m) {
+            muecke = m;
+        }
+        @Override
+        public void onAnimationStart(Animation animation) {
+
+        }
+
+        // 5) Wenn wir jetzt in der Methode onAnimationEnd() die muecke einfach aus dem Spielbereich entfernen, knallt es früher oder später: Animation und Bildschirmaufbau sind nämlich nicht synchronisiert.
+        // --> Es kann passieren, dass Sie die Mücke entfernen, während Android gerade versucht, sie zu zeichnen. Das Resultat wäre ein Crash. Darum müssen wir über den Handler gehen.
+        @Override
+        public void onAnimationEnd(Animation animation) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    spielbereich.removeView(muecke);
+                }
+            });
+        }
+        // 6) Elegante Lösung: Wir übergeben hier der Methode handler.post einen sogenannte anonyme innere Klasse --> nach Runnable: ==>"() {... xxx() { spielbereich.xxxxxx(muecke); } }"<==
+        // ... sie heißt anonym, weil stie keinen Namen erhält und mit new ein (ebenfalls namenloses) Objekt erzeugt wird.
+        // ... die anonyme Klasse implementiert das Interface Runnable, und folglich müssen wir die Methode run() implementieren: In dieser Methoden können wir nun die Mücke unfallfrei entfernen...
+        // 7) Vorteil: Das fragliche Objekt muecke ist der anonymen Klasse bekannt, weil sie einen innere Klasse von MueckeAnimationListener ist, die über die richtige Referenz verfügt.
+
+
+
+
+        @Override
+        public void onAnimationRepeat(Animation animation) {
+
+        }
     }
 
 }
