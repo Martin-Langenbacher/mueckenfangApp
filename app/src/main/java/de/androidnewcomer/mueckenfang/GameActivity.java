@@ -3,6 +3,7 @@ package de.androidnewcomer.mueckenfang;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Dialog;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Gravity;
@@ -30,6 +31,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     private ViewGroup spielbereich;
     private boolean spielLaeuft;
     private Handler handler = new Handler();
+    private MediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +39,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.game);
         massstab = getResources().getDisplayMetrics().density;
         spielbereich = (ViewGroup) findViewById(R.id.spielbereich);
+        mediaPlayer = MediaPlayer.create(this, R.raw.summen);
         spielStarten();
     }
 
@@ -156,6 +159,9 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         params.gravity = Gravity.TOP + Gravity.LEFT;
 
         spielbereich.addView(muecke, params);
+
+        mediaPlayer.seekTo(0);
+        mediaPlayer.start();
     }
 
     @Override
@@ -163,6 +169,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         gefangeneMuecken++;
         punkte += 100;
         bildschirmAktualisieren();
+        mediaPlayer.pause();
         spielbereich.removeView(muecke);
     }
 
@@ -170,4 +177,19 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     public void run() {
         zeitHerunterzaehlen();
     }
+
+
+    @Override
+    protected void onDestroy() {
+        mediaPlayer.release();
+        super.onDestroy();
+    }
+
 }
+
+
+
+
+
+
+
