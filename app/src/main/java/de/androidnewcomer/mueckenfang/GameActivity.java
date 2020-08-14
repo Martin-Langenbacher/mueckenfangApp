@@ -23,6 +23,14 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     private static final long HOECHSTALTER_MS = 2000;
     public static final int DELAY_MILLIS = 100;
     public static final int ZEITSCHEIBEN = 600;
+    private static final int MUECKEN_BILDER[][] = {
+            {R.drawable.muecke_nw, R.drawable.muecke_n, R.drawable.muecke_no},
+            {R.drawable.muecke_w,  R.drawable.muecke,   R.drawable.muecke_o},
+            {R.drawable.muecke_sw, R.drawable.muecke_s, R.drawable.muecke_so}};
+    private static final String HIMMELSRICHTUNGEN[][] = {
+            {"nw", "n", "no"},
+            {"w",  "", "o"},
+            {"sw", "s", "so"}};
     private int punkte;
     private int runde;
     private int gefangeneMuecken;
@@ -88,6 +96,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
         mueckenVerschwinden();
+        mueckenBewegen();
         bildschirmAktualisieren();
         if(!pruefeSpielende()) {
             if(!pruefeRundenende()) {
@@ -96,6 +105,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
     private boolean pruefeRundenende() {
         if(gefangeneMuecken >= muecken) {
             starteRunde();
@@ -103,6 +113,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         }
         return false;
     }
+
 
     private void starteRunde() {
         runde = runde +1;
@@ -113,6 +124,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         handler.postDelayed(this, 1000);
     }
 
+
     private boolean pruefeSpielende() {
         if(zeit == 0 && gefangeneMuecken < muecken) {
             gameOver();
@@ -121,12 +133,30 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         return false;
     }
 
+
     private void gameOver() {
         Dialog dialog = new Dialog(this, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
         dialog.setContentView(R.layout.gameover);
         dialog.show();
         spielLaeuft = false;
     }
+
+
+    private void mueckenBewegen() {
+        int nummer=0;
+        while(nummer < spielbereich.getChildCount()) {
+            ImageView muecke = (ImageView) spielbereich.getChildAt(nummer);
+            int vx = (Integer) muecke.getTag(R.id.vx);
+            int vy = (Integer) muecke.getTag(R.id.vy);
+            // und nun bewegen...
+            FrameLayout.LayoutParams params = (android.widget.FrameLayout.LayoutParams) muecke.getLayoutParams();
+            params.leftMargin += vx*runde;
+            params.topMargin += vy*runde;
+            muecke.setLayoutParams(params);
+            nummer++;
+        }
+    }
+
 
     private void mueckenVerschwinden() {
         int nummer=0;
@@ -142,6 +172,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
     private void eineMueckeAnzeigen() {
         int breite = spielbereich.getWidth();
         int hoehe  = spielbereich.getHeight();
@@ -150,21 +181,55 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         int links = zufallsgenerator.nextInt(breite - muecke_breite );
         int oben = zufallsgenerator.nextInt(hoehe - muecke_hoehe);
 
+        // Mücke erzeugen
         ImageView muecke = new ImageView(this);
-        muecke.setImageResource(R.drawable.muecke);
         muecke.setOnClickListener(this);
         muecke.setTag(R.id.geburtsdatum, new Date());
 
+        // Bewegungsvektor erzeugen
+        int vx;
+        int vy;
+        do {
+            vx = zufallsgenerator.nextInt(3)-1;
+            vy = zufallsgenerator.nextInt(3)-1;
+        } while(vx==0 && vy==0);
+
+        muecke.setTag(R.id.vx, new Integer(vx));
+        muecke.setTag(R.id.vy, new Integer(vy));
+        // wir hängen die Geschwindigkeit als Tag an die Mücke, genau wie das Geburtsdatum.
+
+        setzeBild(muecke, vx, vy);
+
+        // Geschwindigkeitskorrektur für schräge Mücken
+        double faktor = 1.0;
+        if(vx != 0 && vy != 0) {
+            faktor = 0.70710678;
+        }
+
+        vx = (int) Math.round(massstab*faktor*vx);
+        vy = (int) Math.round(massstab*faktor*vy);
+
+        // Mücke anzeigen
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(muecke_breite, muecke_hoehe);
         params.leftMargin = links;
         params.topMargin = oben;
         params.gravity = Gravity.TOP + Gravity.LEFT;
-
         spielbereich.addView(muecke, params);
 
+        // Summen starten
         mediaPlayer.seekTo(0);
         mediaPlayer.start();
     }
+
+
+    private void setzeBild(ImageView muecke, int vx, int vy) {
+        // setzen des richtigen Bildes mit dem zweidimensionalen Array
+        muecke.setImageResource(MUECKEN_BILDER[vy+1][vx+1]);
+
+        // alternativ: setzen über Himmelsrichtungen und Bildname
+        //muecke.setImageResource(getResources().getIdentifier("muecke_"+HIMMELSRICHTUNGEN[vy+1][vx+1], "drawable", getPackageName()));
+    }
+
 
     @Override
     public void onClick(View muecke) {
@@ -227,6 +292,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
         }
 
+
         // 5) Wenn wir jetzt in der Methode onAnimationEnd() die muecke einfach aus dem Spielbereich entfernen, knallt es früher oder später: Animation und Bildschirmaufbau sind nämlich nicht synchronisiert.
         // --> Es kann passieren, dass Sie die Mücke entfernen, während Android gerade versucht, sie zu zeichnen. Das Resultat wäre ein Crash. Darum müssen wir über den Handler gehen.
         @Override
@@ -242,8 +308,6 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         // ... sie heißt anonym, weil stie keinen Namen erhält und mit new ein (ebenfalls namenloses) Objekt erzeugt wird.
         // ... die anonyme Klasse implementiert das Interface Runnable, und folglich müssen wir die Methode run() implementieren: In dieser Methoden können wir nun die Mücke unfallfrei entfernen...
         // 7) Vorteil: Das fragliche Objekt muecke ist der anonymen Klasse bekannt, weil sie einen innere Klasse von MueckeAnimationListener ist, die über die richtige Referenz verfügt.
-
-
 
 
         @Override
