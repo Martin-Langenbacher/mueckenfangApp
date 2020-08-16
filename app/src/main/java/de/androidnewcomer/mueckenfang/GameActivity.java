@@ -42,6 +42,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     private boolean spielLaeuft;
     private Handler handler = new Handler();
     private MediaPlayer mediaPlayer;
+    private int schwierigkeitsgrad;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +51,8 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         massstab = getResources().getDisplayMetrics().density;
         spielbereich = (ViewGroup) findViewById(R.id.spielbereich);
         mediaPlayer = MediaPlayer.create(this, R.raw.summen);
+            // ... nun muss die GameAcivity den Wert wieder aus dem Intent (von MueckenfangActivity.java) extrahieren:
+        schwierigkeitsgrad = getIntent().getIntExtra("schwierigkeitsgrad",0);
         spielStarten();
     }
 
@@ -117,7 +120,8 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
     private void starteRunde() {
         runde = runde +1;
-        muecken = runde *10;
+        muecken = runde * (10 + schwierigkeitsgrad * 10);
+        // muecken = runde *10;
         gefangeneMuecken = 0;
         zeit = ZEITSCHEIBEN;
         bildschirmAktualisieren();
@@ -236,7 +240,8 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View muecke) {
         gefangeneMuecken++;
-        punkte += 150;
+        punkte += 150 + schwierigkeitsgrad * 100;
+        // punkte += 150;
         bildschirmAktualisieren();
         mediaPlayer.pause();
         Animation animationTreffer = AnimationUtils.loadAnimation(this,R.anim.treffer);

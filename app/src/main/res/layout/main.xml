@@ -14,7 +14,7 @@
         android:textIsSelectable="true"
         android:textColor="#ffff0560"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="80dp" />
+        android:layout_marginTop="20dp" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -23,6 +23,12 @@
         android:layout_gravity="center_horizontal"
         android:src="@drawable/muecke"
         android:padding="20dp" />
+
+    <Spinner
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/schwierigkeitsgrad"
+        android:layout_gravity="center_horizontal" />
 
     <Button
         android:layout_width="wrap_content"
@@ -48,7 +54,9 @@
         android:text="Large Text"
         android:id="@+id/highscore_number"
         android:layout_gravity="center_horizontal"
-        android:textColor="#ffc7ff0c" />
+        android:textColor="#ffc7ff0c"
+        android:layout_marginBottom="20dp" />
+
 
     <LinearLayout
         android:orientation="vertical"
@@ -80,7 +88,29 @@
             android:id="@+id/speichern_button" />
     </LinearLayout>
 
-    <ScrollView
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/highscores"
+        android:id="@+id/textView4"
+        android:textColor="#ffffd903" />
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/listView"
+        android:layout_weight="1"
+        android:cacheColorHint="#00000000" />
+
+</LinearLayout>
+
+
+
+
+
+<!-- Alt: Vor Kapitel 7.3
+<ScrollView
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:id="@+id/scrollView"
@@ -108,8 +138,12 @@
                 android:id="@+id/highscores" />
         </LinearLayout>
     </ScrollView>
+-->
 
-</LinearLayout>
+
+
+
+
 
 <!--
 
