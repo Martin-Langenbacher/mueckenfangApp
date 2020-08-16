@@ -139,6 +139,8 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         dialog.setContentView(R.layout.gameover);
         dialog.show();
         spielLaeuft = false;
+        // --> mit der Methode setResult() übergeben wir die Punkte zurück an MueckenfangActivity: Auf diese Weise ist dafür gesorgt, dass onActivityResult() mit der Punktzahl aufgerufen wird.
+        setResult(punkte);
     }
 
 
@@ -234,7 +236,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View muecke) {
         gefangeneMuecken++;
-        punkte += 100;
+        punkte += 150;
         bildschirmAktualisieren();
         mediaPlayer.pause();
         Animation animationTreffer = AnimationUtils.loadAnimation(this,R.anim.treffer);

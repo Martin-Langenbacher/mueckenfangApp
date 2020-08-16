@@ -4,4 +4,8 @@
     <string name="start_button">Start</string>
     <string name="todo">TODO</string>
     <string name="game_over">Game Over</string>
+    <string name="highscore">Highscore</string>
+    <string name="speichern">Speichern</string>
+    <string name="new_highscore">Neuer Highscore! Gib Deinen Namen ein!</string>
+    <string name="highscores">Highscores</string>
 </resources>
