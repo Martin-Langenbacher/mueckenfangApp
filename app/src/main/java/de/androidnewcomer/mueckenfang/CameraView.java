@@ -56,5 +56,12 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         camera.startPreview();
     }
 
+        // um auf die Bilddateien zugreifen zu können...
+    public void setOneShotPreviewCallback(Camera.PreviewCallback callback) {
+        if(camera!=null) {
+            camera.setOneShotPreviewCallback(callback);
+        }
+    }
+
 
 }

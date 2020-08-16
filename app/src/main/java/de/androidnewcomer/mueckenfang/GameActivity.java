@@ -3,6 +3,9 @@ package de.androidnewcomer.mueckenfang;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Dialog;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.hardware.Camera;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,7 +21,7 @@ import android.widget.TextView;
 import java.util.Date;
 import java.util.Random;
 
-public class GameActivity extends AppCompatActivity implements View.OnClickListener, Runnable {
+public class GameActivity extends AppCompatActivity implements View.OnClickListener, Runnable, Camera.PreviewCallback {
 
     private static final long HOECHSTALTER_MS = 2000;
     public static final int DELAY_MILLIS = 100;
@@ -43,11 +46,13 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     private Handler handler = new Handler();
     private MediaPlayer mediaPlayer;
     private int schwierigkeitsgrad;
+    private CameraView cameraView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.game);
+        cameraView = findViewById(R.id.camera);
         massstab = getResources().getDisplayMetrics().density;
         spielbereich = (ViewGroup) findViewById(R.id.spielbereich);
         mediaPlayer = MediaPlayer.create(this, R.raw.summen);
@@ -60,6 +65,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         spielLaeuft = true;
         runde = 0;
         punkte = 0;
+        cameraView.setOneShotPreviewCallback(this);
         starteRunde();
     }
 
@@ -104,6 +110,8 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         if(!pruefeSpielende()) {
             if(!pruefeRundenende()) {
                 handler.postDelayed(this, DELAY_MILLIS);
+                    // ... somit fordern wir ein frisches Kamerabild an:
+                cameraView.setOneShotPreviewCallback(this);
             }
         }
     }
@@ -276,6 +284,54 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         handler.removeCallbacks(this);
     }
     // --> Da in der GameActivity keine eigene Runnable-Klasse gebaut wurde, sondern die Activity selbst dazu verwendet wurde, lautet der richtige Parameter beim Aufruf der Methode removeCallbacks() einfach this.
+
+
+    @Override
+    public void onPreviewFrame(byte[] bild, Camera camera) {
+        int breite = camera.getParameters().getPreviewSize().width;
+        int hoehe = camera.getParameters().getPreviewSize().height;
+        if (camera.getParameters().getPreviewFormat() == ImageFormat.NV21 && spielbereich.getChildCount()>0) {
+            mueckenAufTomatenPruefen(new NV21Image(bild, breite, hoehe));
+        }
+    }
+
+
+
+    private void mueckenAufTomatenPruefen(NV21Image nv21) {
+        int nummer=0;
+        while(nummer<spielbereich.getChildCount()) {
+            ImageView muecke = (ImageView) spielbereich.getChildAt(nummer);
+            if(mueckeBeruehrtTomate(muecke, nv21)) {
+                mediaPlayer.pause();
+                gefangeneMuecken++;
+                punkte += 100 + schwierigkeitsgrad*100;
+                bildschirmAktualisieren();
+                spielbereich.removeView(muecke);
+            } else {
+                nummer++;
+            }
+        }
+    }
+
+
+    private boolean mueckeBeruehrtTomate(ImageView muecke, NV21Image nv21) {
+        float faktorHorizontal = nv21.getHoehe()*1.0f / getResources().getDisplayMetrics().widthPixels;
+        float faktorVertikal = nv21.getBreite()*1.0f / getResources().getDisplayMetrics().heightPixels;
+        Rect ausschnitt = new Rect();
+        ausschnitt.bottom= Math.round(nv21.getHoehe() - faktorHorizontal * muecke.getLeft());
+        ausschnitt.top   = Math.round(nv21.getHoehe() - faktorHorizontal * muecke.getRight());
+        ausschnitt.right = Math.round(faktorVertikal * muecke.getBottom());
+        ausschnitt.left  = Math.round(faktorVertikal * muecke.getTop());
+        int rotePixel = nv21.zaehleRotePixel(ausschnitt);
+        if(rotePixel > 10) {
+            return true;
+        }
+        return false;
+    }
+
+
+
+
 
 
 

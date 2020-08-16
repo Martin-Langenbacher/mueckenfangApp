@@ -50,10 +50,11 @@ public class MueckenfangActivity extends AppCompatActivity implements View.OnCli
     private static final String HIGHSCORESERVER_GAME_ID = "muuuueckenfang";
     private ListView listView;
     private ToplistAdapter adapter;
-    private List<String> highscoreList = new ArrayList<String>();
+    private List<String> highscoreList = new ArrayList<>();
     // private String highscoresHtml;
     private Spinner schwierigkeitsgrad;
     private ArrayAdapter<String> schwierigkeitsgradAdapter;
+
 
         // inner class: TopListAdapter...
     private class ToplistAdapter extends ArrayAdapter<String> {
@@ -69,7 +70,6 @@ public class MueckenfangActivity extends AppCompatActivity implements View.OnCli
             }
 
                 // Die Methode getView() erzeugt oder füllt die View, die eine Zeile in der Liste darstellt:
-
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 if(convertView == null) {
@@ -82,8 +82,11 @@ public class MueckenfangActivity extends AppCompatActivity implements View.OnCli
                 TextView tvName = (TextView) convertView.findViewById(R.id.name);
                 tvName.setText(sss.next());
 
-                //TextView tvPunkte = (TextView) convertView.findViewById(R.id.punkteTest);
+                TextView tvPunkte = (TextView) convertView.findViewById(R.id.points);
+                tvPunkte.setText("Fehler");
                 //tvPunkte.setText(sss.next());
+                // ggf. Speicher löschen ??????????????????????????????????????????????????????????????????????????????????????
+                Log.d("Problem: ", "-------------------------------------------------------------------------------------------------------------------------------->" +sss.toString());
 
                 return  convertView;
             }

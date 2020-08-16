@@ -207,7 +207,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:src="@drawable/hintergrund"
-            android:contentDescription="@string/todo" />
+            android:contentDescription="@string/todo2" />
 
         <Button
             android:id="@+id/button"
