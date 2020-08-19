@@ -3,4 +3,6 @@
     <item name="geburtsdatum" type="id" />
     <item name="vx" type="id" />
     <item name="vy" type="id" />
+    <item name="azimut" type="id" />
+    <item name="polar" type="id" />
 </resources>
