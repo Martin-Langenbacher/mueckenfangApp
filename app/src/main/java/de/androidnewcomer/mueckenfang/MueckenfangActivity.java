@@ -316,8 +316,6 @@ public class MueckenfangActivity extends AppCompatActivity implements View.OnCli
             startButton.setEnabled(true);
         }
     }
-
-
 }
 
 
