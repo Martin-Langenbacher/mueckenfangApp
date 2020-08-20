@@ -47,7 +47,7 @@ public class MueckenfangActivity extends AppCompatActivity implements View.OnCli
     private View namenseingabe;
     private Button speichern;
     private static final String HIGHSCORE_SERVER_BASE_URL = "https://myhighscoreserver.appspot.com/highscoreserver";
-    private static final String HIGHSCORESERVER_GAME_ID = "muuuueckenfang";
+    private static final String HIGHSCORESERVER_GAME_ID = "muuuuueckenfang";
     private ListView listView;
     private ToplistAdapter adapter;
     private List<String> highscoreList = new ArrayList<>();
@@ -59,8 +59,11 @@ public class MueckenfangActivity extends AppCompatActivity implements View.OnCli
         // inner class: TopListAdapter...
     private class ToplistAdapter extends ArrayAdapter<String> {
 
-            public ToplistAdapter(Context context, int resource) {
-                super(context, resource);
+            // Konstruktor
+            public ToplistAdapter( int resource) {
+                super(MueckenfangActivity.this, resource);
+                // super(context, resource);
+                // wenn ich in Zeile 60 eine static class hätte, wäre MueckenfangActivity.this nicht möglich; sondern dann müsste man es anders übergeben!
             }
 
                 // teilt der zuständigen ListView die Anzahl der verfügbaren Listeneinträge mit
@@ -79,14 +82,13 @@ public class MueckenfangActivity extends AppCompatActivity implements View.OnCli
                 tvPlatz.setText(Integer.toString(position + 1) + ".");
                 TextUtils.SimpleStringSplitter sss = new TextUtils.SimpleStringSplitter(',');
                 sss.setString(highscoreList.get(position));
-                TextView tvName = (TextView) convertView.findViewById(R.id.name);
+                TextView tvName = convertView.findViewById(R.id.name);
+                //tvName.setText(highscoreList.get(position));
                 tvName.setText(sss.next());
 
-                TextView tvPunkte = (TextView) convertView.findViewById(R.id.points);
-                tvPunkte.setText("Fehler");
-                //tvPunkte.setText(sss.next());
-                // ggf. Speicher löschen ??????????????????????????????????????????????????????????????????????????????????????
-                Log.d("Problem: ", "-------------------------------------------------------------------------------------------------------------------------------->" +sss.toString());
+                TextView tvPunkte = convertView.findViewById(R.id.points);
+                //tvPunkte.setText("Fehler");
+                tvPunkte.setText(sss.next());
 
                 return  convertView;
             }
@@ -110,7 +112,8 @@ public class MueckenfangActivity extends AppCompatActivity implements View.OnCli
 
         listView = (ListView) findViewById(R.id.listView);
             // wir deklarieren den Adapter als Attribut der Activity, und initialisieren ihn in der onCreate-Methode
-        adapter = new ToplistAdapter(this,0);
+            // this hat den Wert der aktuellen Mückenfang-Activity-Instanz
+        adapter = new ToplistAdapter(0);
         listView.setAdapter(adapter);
         schwierigkeitsgrad = (Spinner) findViewById(R.id.schwierigkeitsgrad);
         schwierigkeitsgradAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, new String[] {"leicht","mittel","schwer"});
